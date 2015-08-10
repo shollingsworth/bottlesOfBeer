@@ -10,37 +10,41 @@
 </html>
 <script type="text/javascript">
 $(document).ready(function(){ init(); });
+var body = $('body');
 var Bottles = {
    'bottleType':'Beer',
    'bottleCount':'100',
-   'tempoDuration':0.550,
+   'tempoDuration':600,
    'tempoSpeed':1,
    'tempoBlock':[
-      '{{bottleCount}}',
+      '{{cnt}}',
       'Bottles of',
-      '{{bottleType}} on the',
+      '{{type}} on the',
       'wall',
-      '{{bottleCount}}',
+      '{{cnt}}',
       'Bottles of',
-      '{{bottleType}}',
+      '{{type}}',
       '',
-      'Take one',
-      'down',
+      'Take',
+      'one down',
       'pass it',
       'around'
    ],
    'lastBlock':[
+      '',
       'no more',
       'Bottles of',
-      '{{bottleType}} on the',
+      '{{type}} on the',
       'wall!'
    ]
 };
 
-function getStanza() {
+function getStanza(cnt,type) {
+   var replace = {};
+   replace.type = type;
+   replace.cnt = cnt;
    var retarr = [];
    var block;
-   var cnt = Bottles.bottleCount;
    if(cnt === 0) {
       block = Bottles.lastBlock;
    } else {
@@ -51,30 +55,51 @@ function getStanza() {
       var arr = re.exec(line);
       if(arr !== null) {
          var repl = arr[1];
-         line = line.replace(re,Bottles[repl],"$0");
+         line = line.replace(re,replace[repl],"$0");
       }
       retarr.push(line);
    });
    return retarr;
 }
 
-function getCurrentStatus() {
-   var bt = Bottles.bottleType;
-   var cnt = Bottles.bottleCount;
-   return cnt+" Bottles of "+bt+" on the wall";
+function getCurrentStatus(cnt,type) {
+   return cnt+" Bottles of "+type+" on the wall";
 }
 
-function setTitle (title){
-   $('title').html(title);
+function setQueue(cnt,type) {
+   body.queue('Queue',[]).stop();
+   var durationCounter = 0;
+   var queue = [];
+   while(cnt >= 0) {
+      var stan = getStanza(cnt,type);
+      var title = getCurrentStatus(cnt,type);
+      queue.push({
+         stanza:stan,
+         title:title
+      });
+      cnt--;
+   }
+
+   $.each(queue,function(i,set){
+      var stanza = set.stanza;
+      var title = set.title;
+      body.queue('Queue', function(){ 
+         $('title').html(title);
+         console.log('new title: '+title);
+         $(this).dequeue('Queue');
+      });
+      $.each(stanza,function(z,line){
+         body.queue('Queue', function(){ 
+            console.log(line);
+            $(this).dequeue('Queue');
+         }).delay(Bottles.tempoDuration,'Queue');
+      });
+   });
+   body.dequeue('Queue');
 }
 
 function init() {
-   setTitle(getCurrentStatus());
-   while(Bottles.bottleCount > 0) {
-      Bottles.bottleCount--;
-      setTitle(getCurrentStatus());
-      var stan = getStanza();
-      console.log(stan.join(" "));
-   }
+   $('title').html(getCurrentStatus(Bottles.bottleCount,Bottles.bottleType));
+   setQueue(Bottles.bottleCount,Bottles.bottleType);
 }
 </script>

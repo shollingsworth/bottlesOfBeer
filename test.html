@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+   <title>Test</title>
+</head>
+<body>
+<style type="text/css">
+   body {
+      width:100%;
+      height:100%;
+   }
+</style>
+</body>
+</html>
+<script type="text/javascript">
+$(document).ready(function() {
+   // cache the body element
+   var body = $('body');
+
+   /*
+     Create a "bodyQueue" queue for the body element and add a function into it.
+     After this funnction runs it will delay the "bodyQueue" queue by 5 seconds.
+          None of the functions are run until an event triggers the dequeue() method.
+          This event is defined at the end using a click on the body.
+   */
+   body.queue('bodyQueue', function(){ 
+       console.log('1st function. Next one is delayed by 5 seconds');
+       $(this).dequeue('bodyQueue');
+   }).delay(5000, 'bodyQueue');
+
+   // Add another
+   body.queue('bodyQueue', function(){ 
+       console.log('2nd function (delayed 5 seconds)');
+       $(this).dequeue('bodyQueue');
+   });
+
+   // Add another
+   body.queue('bodyQueue', function(){ 
+       console.log('3rd function');
+       $(this).dequeue('bodyQueue');         
+   });
+
+   // Add another
+   body.queue('bodyQueue', function(){ 
+       console.log('4th function');
+       $(this).dequeue('bodyQueue');
+   });
+
+   /*
+     Add another and delay the "bodyQueue" queue by 5 seconds.
+   */
+   body.queue('bodyQueue', function(){ 
+       console.log('5th function. Next one is delayed by 5 seconds');
+       $(this).dequeue('bodyQueue');
+   }).delay(5000, 'bodyQueue');
+
+   // Add the last one
+   body.queue('bodyQueue', function(){ 
+       console.log('6th function (delayed 5 seconds)');
+   });
+
+   // Show the queued functions when the page loads
+   var queue = body.queue('bodyQueue');                               
+   console.log('There are ' + queue.length + ' functions left in the "bodyQueue" queue:');
+   console.log(body.queue('bodyQueue'));
+   body.dequeue('bodyQueue');
+});
+</script>
