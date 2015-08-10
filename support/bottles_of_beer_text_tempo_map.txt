@@ -1,0 +1,15 @@
+0.029000 99
+0.632000 Bottles of
+1.203000 Beer on the
+1.778000 wall
+2.367000 99 
+2.928000 Bottles of 
+3.466000 Beer
+4.568000 Take one 
+5.156000 down
+5.725000 pass it 
+6.272000 around
+6.816000 98 
+7.369000 Bottles of
+7.942000 Beer on the
+8.533000 wall

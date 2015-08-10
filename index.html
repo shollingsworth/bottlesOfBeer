@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+<meta charset="utf-8">
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<title></title>
+</head>
+<body>
+</body>
+</html>
+<script type="text/javascript">
+$(document).ready(function(){ init(); });
+var Bottles = {
+   'bottleType':'Beer',
+   'bottleCount':'100',
+   'tempoDuration':0.550,
+   'tempoSpeed':1,
+   'tempoBlock':[
+      '{{bottleCount}}',
+      'Bottles of',
+      '{{bottleType}} on the',
+      'wall',
+      '{{bottleCount}}',
+      'Bottles of',
+      '{{bottleType}}',
+      '',
+      'Take one',
+      'down',
+      'pass it',
+      'around'
+   ],
+   'lastBlock':[
+      'no more',
+      'Bottles of',
+      '{{bottleType}} on the',
+      'wall!'
+   ]
+};
+
+function getStanza() {
+   var retarr = [];
+   var block;
+   var cnt = Bottles.bottleCount;
+   if(cnt === 0) {
+      block = Bottles.lastBlock;
+   } else {
+      block = Bottles.tempoBlock;
+   }
+   $.each(block,function(i,line){
+      var re = /\{\{(.*)\}\}/g;
+      var arr = re.exec(line);
+      if(arr !== null) {
+         var repl = arr[1];
+         line = line.replace(re,Bottles[repl],"$0");
+      }
+      retarr.push(line);
+   });
+   return retarr;
+}
+
+function getCurrentStatus() {
+   var bt = Bottles.bottleType;
+   var cnt = Bottles.bottleCount;
+   return cnt+" Bottles of "+bt+" on the wall";
+}
+
+function setTitle (title){
+   $('title').html(title);
+}
+
+function init() {
+   setTitle(getCurrentStatus());
+   while(Bottles.bottleCount > 0) {
+      Bottles.bottleCount--;
+      setTitle(getCurrentStatus());
+      var stan = getStanza();
+      console.log(stan.join(" "));
+   }
+}
+</script>
