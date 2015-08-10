@@ -3,9 +3,14 @@
 <head> 
 <meta charset="utf-8">
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
 <title></title>
 </head>
 <body>
+   <div id='timer'></div>
+   <div id='song'></div>
+   <div id='drunk'></div>
+   <div id='drink'></div>
 </body>
 </html>
 <script type="text/javascript">
@@ -13,7 +18,10 @@ $(document).ready(function(){ init(); });
 var body = $('body');
 var Bottles = {
    'bottleType':'Beer',
-   'bottleCount':'100',
+   'full':"./images/beer.png",
+   'empty':"./images/beer_done.png",
+   'timeLeft':0,
+   'bottleCount':500,
    'tempoDuration':600,
    'tempoSpeed':1,
    'tempoBlock':[
@@ -25,13 +33,12 @@ var Bottles = {
       'Bottles of',
       '{{type}}',
       '',
-      'Take',
-      'one down',
+      'Take one',
+      'down',
       'pass it',
       'around'
    ],
    'lastBlock':[
-      '',
       'no more',
       'Bottles of',
       '{{type}} on the',
@@ -57,6 +64,7 @@ function getStanza(cnt,type) {
          var repl = arr[1];
          line = line.replace(re,replace[repl],"$0");
       }
+      if(cnt === 1) line = line.replace(/Bottles/,'Bottle');
       retarr.push(line);
    });
    return retarr;
@@ -66,7 +74,42 @@ function getCurrentStatus(cnt,type) {
    return cnt+" Bottles of "+type+" on the wall";
 }
 
-function setQueue(cnt,type) {
+function setTimeLeft() {
+   var dur = moment.duration(Bottles.timeLeft);
+   var units = [
+      'years',
+      'months',
+      'days',
+      'hours',
+      'minutes',
+      'seconds'
+   ];
+   var display = [];
+   $.each(units,function(i,unit){
+      var x = dur.get(unit);
+      if(x) {
+         if(x === 1) unit = unit.replace(/s$/,'');
+         display.push(x+" "+unit);
+      }
+   });
+   //add 'and' 
+   if(display.length > 1) {
+      var last = display.pop();
+      display.push('and');
+      display.push(last);
+   }
+   var left = display.join(" ");
+   if(display.length === 0) {
+      $("#timer").html('Finished!');
+   } else {
+      $("#timer").html('Will finish in: '+left);
+   }
+}
+
+function setQueue() {
+   var cnt = Bottles.bottleCount;
+   var type = Bottles.bottleType;
+   Bottles.timeLeft = 0;
    body.queue('Queue',[]).stop();
    var durationCounter = 0;
    var queue = [];
@@ -83,23 +126,46 @@ function setQueue(cnt,type) {
    $.each(queue,function(i,set){
       var stanza = set.stanza;
       var title = set.title;
+      var img = $("<img/>");
+      img.attr('title',Bottles.bottleType+" #"+i);
+      if(i !== 0) {
+         img.attr('src',Bottles.full);
+         img.attr('width',50);
+         img.attr('height',75);
+         img.appendTo("#drink");
+      }
       body.queue('Queue', function(){ 
+         Bottles.bottleCount--;
+         setTimeLeft();
          $('title').html(title);
-         console.log('new title: '+title);
+         $("#song").html('');
+         if(i !== 0) {
+            img.appendTo("#drunk");
+            img.attr('src',Bottles.empty);
+            img.attr('width',90);
+            img.attr('height',40);
+         }
          $(this).dequeue('Queue');
       });
+
       $.each(stanza,function(z,line){
+         Bottles.timeLeft += Bottles.tempoDuration;
          body.queue('Queue', function(){ 
-            console.log(line);
+            Bottles.timeLeft -= Bottles.tempoDuration;
+            $("#song").append(line,'&nbsp;');
             $(this).dequeue('Queue');
          }).delay(Bottles.tempoDuration,'Queue');
       });
+   });
+   //last
+   body.queue('Queue', function(){
+      Bottles.timeLeft = 0;
+      setTimeLeft();
    });
    body.dequeue('Queue');
 }
 
 function init() {
-   $('title').html(getCurrentStatus(Bottles.bottleCount,Bottles.bottleType));
-   setQueue(Bottles.bottleCount,Bottles.bottleType);
+   setQueue();
 }
 </script>
